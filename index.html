@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Document</title>
+</head>
+
+<body>
+	<div id="main" style="width: 600px;height:400px;"></div>
+	<script src='./js/echarts.min.js'></script>
+	<script src='./js/jquery.1.11.js'></script>
+	<script>
+		//Part.A 基于时间的数据曲线
+		$(function () {
+			$.ajax({
+				url: "http://47.75.66.0:80/interview_api/price_time_series",   //请求url  
+				type: "POST",  //请求类型
+				contentType: "application/json",
+				dataType: "JSON",  //返回数据的 类型 text|json|html--  
+				data: JSON.stringify({
+					"type": "all"
+				}),
+				success: function (data) {  //回调函数 和 后台返回的 数据  
+					// console.log(data);
+					// console.log(data.market_line[1].timestamp);
+					// console.log(data.end_date);
+					// 在main中初始化echarts
+					var myChart = echarts.init(document.getElementById('main'));
+					function randomData() {
+						now = new Date(+now + oneDay);
+						value = value + Math.random() * 21 - 10;
+						return {
+							name: now.toString(),
+							value: [
+								[now.getFullYear(), now.getMonth() + 1, now.getDate()].join('/'),
+								Math.round(value)
+							]
+						}
+					}
+
+					var data = [];
+					var now = +new Date(2018, 9, 3);
+					var oneDay = 24 * 3600 * 1000;
+					var value = Math.random() * 1000;
+					for (var i = 0; i < 1000; i++) {
+						data.push(randomData());
+					}
+
+					option = {
+						title: {
+							text: 'A:基于时间的数据曲线'
+						},
+						tooltip: {
+							trigger: 'axis',
+							formatter: function (params) {
+								params = params[0];
+								var date = new Date(params.name);
+								return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() + ' : ' + params.value[1];
+							},
+							axisPointer: {
+								animation: false
+							}
+						},
+						xAxis: {
+							type: 'time',
+							splitLine: {
+								show: false
+							}
+						},
+						yAxis: {
+							type: 'value',
+							boundaryGap: [0, '100%'],
+							splitLine: {
+								show: false
+							}
+						},
+						series: [{
+							name: '模拟数据',
+							type: 'line',
+							showSymbol: false,
+							hoverAnimation: false,
+							data: data
+						}]
+					};
+
+					setInterval(function () {
+
+						for (var i = 0; i < 5; i++) {
+							data.shift();
+							data.push(randomData());
+						}
+
+						myChart.setOption({
+							series: [{
+								data: data
+							}]
+						});
+					}, 1000);
+					// 使用刚指定的配置项和数据显示图表。
+					myChart.setOption(option);
+				}
+			});
+		});
+	</script>
+</body>
+
+</html>
